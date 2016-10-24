@@ -4,17 +4,18 @@ Create JWT tokens using township [auth](http://github.com/township/township-auth
 
 ## Install
 
-```
-npm i -g township-token
-```
+    npm i -g township-token
 
 ## Examples
 
 Basic example:
 
 ```js
+var level = require('level')
 var townshipToken = require('township-token')
-var tokens = townshipToken({ secret: process.env.TOWNSHIP_SECRET })
+
+var db = level('./db')
+var tokens = townshipToken(db, { secret: process.env.TOWNSHIP_SECRET })
 
 // create a token
 var token = tokens.sign({
@@ -24,7 +25,9 @@ var token = tokens.sign({
 })
 
 // verify and decode a token
-var data = tokens.verify(token)
+tokens.verify(token, function (err, data) {
+  // use the data from the token
+})
 ```
 
 Full example with [township-auth](http://github.com/township/township-auth) & [township-access](http://github.com/township/township-access):
@@ -37,7 +40,7 @@ var townshipAuth = require('township-auth')
 var basic = require('township-auth/basic')
 
 var db = level('db')
-var tokens = townshipToken({ secret: process.env.TOWNSHIP_SECRET })
+var tokens = townshipToken(db, { secret: process.env.TOWNSHIP_SECRET })
 var access = townshipAccess(db)
 var auth = townshipAuth(db, {
   providers: { basic: basic }
@@ -47,7 +50,7 @@ var creds = { basic: { email: 'hi@example.com', password: 'oops' } }
 
 // create an auth record
 auth.create(creds, function (err, authData) {
-  
+
   // create an access record
   access.create(account.key, ['site:read'], function (err, accessData) {
 
@@ -58,14 +61,22 @@ auth.create(creds, function (err, authData) {
     })
 
     // verify the token when received from a client
-    tokens.verify(token)
+    tokens.verify(token, function (err, data) {
+      // use the data from the token
+    })
   })
 })
 ```
 
+## API
+
+Read the API docs for this module in [docs/API.md](docs/API.md)
+
 ## See also
-- [township-auth](https://github.com/township/township-auth) - manage authentication credentials
-- [township-access](https://github.com/township/township-access) - manage access authorization scopes
+
+-   [township-auth](https://github.com/township/township-auth) - manage authentication credentials
+-   [township-access](https://github.com/township/township-access) - manage access authorization scopes
 
 ## License
+
 [MIT](LICENSE.md)
