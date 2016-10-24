@@ -1,6 +1,6 @@
 {
   "name": "township-token",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "create a jwt token from township auth and access data",
   "main": "index.js",
   "scripts": {
