@@ -2,17 +2,21 @@
 
 # townshipToken
 
-Initialize the `townshipToken` module
+Initialize the `townshipToken` module. You can choose to specify either `secret` or `publicKey` and `privateKey` for signatures. To generate a keypair you can use [these commands](https://gist.github.com/maxogden/62b7119909a93204c747633308a4d769).
 
 **Parameters**
 
 -   `db` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** – An instance of a leveldb via [level](https://https://github.com/Level/level)
 -   `options` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** 
-    -   `options.secret` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** – Secret used for signing tokens
+    -   `options.algorithm` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** – **Optional.** JWA algorithm, default is `HS256` (HMAC/SHA256 with secret). You must specify your key type if using a keypair.
+    -   `options.secret` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** – **Optional.** Secret used for signing and verifying tokens
+    -   `options.publicKey` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** – **Optional.** Public key used to sign tokens
+    -   `options.privateKey` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** – **Optional.** Private key used to verify tokens
 
 **Examples**
 
 ```javascript
+// using a secret
 var level = require('level')
 var townshipToken = require('township-token')
 
@@ -20,9 +24,22 @@ var db = level('./db')
 var tokens = townshipToken(db, { secret: process.env.TOWNSHIP_SECRET })
 ```
 
+```javascript
+// using a keypair
+var tokens = townshipToken(db, {
+  algorithm: 'ES512',
+  public: `-----BEGIN PUBLIC KEY-----
+blahblah
+-----END PUBLIC KEY-----`,
+  private: `-----BEGIN EC PRIVATE KEY-----
+blahblah
+-----END EC PRIVATE KEY-----`
+})
+```
+
 # tokens.sign
 
-Sign a payload to create a tokens.
+Sign a payload to create a token.
 
 **Parameters**
 
@@ -46,19 +63,30 @@ var token = tokens.sign({
 
 # tokens.verify
 
-Verify a tokens.
+Verify a token.
 
 **Parameters**
 
 -   `token` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** The encoded token that was created by `tokens.sign`.
 -   `options` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** **Optional.**
     -   `options.secret` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** **Optional.** Override the secret passed into `townshipToken`
--   `callback` **[function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function)** \-
+-   `callback` **[function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function)** 
 
 # tokens.invalidate
 
 Invalidate a token by storing it in the invalid list.
 
+**Parameters**
+
+-   `token` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** The encoded token that was created by `tokens.sign`.
+-   `callback` **[function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function)** 
+
 # tokens.cleanupInvalidList
 
 Remove expired tokens from the list of invalid tokens.
+
+**Parameters**
+
+-   `options` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** **Optional.**
+    -   `options.secret` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** **Optional.** Override the secret passed into `townshipToken`
+-   `callback` **[function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function)** 
