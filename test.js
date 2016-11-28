@@ -6,9 +6,54 @@ var memdb = require('memdb')
 
 var townshipToken = require('./index')
 
-test('sign and verify a token', function (t) {
+test('sign and verify a token with secret', function (t) {
   var db = memdb()
   var tokens = townshipToken(db, { secret: 'not a secret' })
+
+  var tokenData = {
+    auth: {
+      basic: {
+        key: 'pizza',
+        email: 'pizza@pizza.com'
+      }
+    },
+    access: {
+      key: 'pizza',
+      scopes: ['pizza:eat']
+    },
+    data: {
+      arbitrary: 'data'
+    }
+  }
+
+  var token = tokens.sign(tokenData)
+  tokens.verify(token, function (err, data) {
+    t.notOk(err)
+    t.ok(token)
+    t.ok(data)
+    t.equal(data.auth.key, tokenData.auth.key)
+    t.end()
+  })
+})
+
+test('sign and verify a token with keypair', function (t) {
+  var db = memdb()
+  var keys = {
+    public: `-----BEGIN PUBLIC KEY-----
+MIGbMBAGByqGSM49AgEGBSuBBAAjA4GGAAQAvmJlA/DZl3SVKNl0OcyVbsMTOmTM
+qU0Avhmcl6r8qxkBgjwArIxQr7G7v8m0LOeFIklnmF3sYAwA+8llHGFReV8ASW4w
+5AUC8ngZThaH9xk6DQscaMmoEFPN5thWpNcwMgUFYovBtPLwtAZjYr9Se+UT/5k4
+VltW7ko6SHbCfMgUUbU=
+-----END PUBLIC KEY-----`,
+    private: `-----BEGIN EC PRIVATE KEY-----
+MIHbAgEBBEFmz7VMXRtCPTlBETqMMx/mokyA3xPXra2SkcA7Xh0N6sgne1rgSZNU
+ngT6TR3XLfBOt5+p5GRW6p1FVtn+vtPyRKAHBgUrgQQAI6GBiQOBhgAEAL5iZQPw
+2Zd0lSjZdDnMlW7DEzpkzKlNAL4ZnJeq/KsZAYI8AKyMUK+xu7/JtCznhSJJZ5hd
+7GAMAPvJZRxhUXlfAEluMOQFAvJ4GU4Wh/cZOg0LHGjJqBBTzebYVqTXMDIFBWKL
+wbTy8LQGY2K/UnvlE/+ZOFZbVu5KOkh2wnzIFFG1
+-----END EC PRIVATE KEY-----`
+  }
+  var tokens = townshipToken(db, { keys: keys, algorithm: 'ES512' })
 
   var tokenData = {
     auth: {

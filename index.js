@@ -18,7 +18,9 @@ var through = require('through2')
 **/
 module.exports = function townshipToken (maindb, options) {
   options = options || {}
-  var secret = options.secret || 'not a secret'
+  var secret = options.secret
+  var keys = options.keys || {}
+  var algorithm = options.algorithm
   var db = sublevel(maindb, 'township-token')
   var tokens = {}
   tokens.db = db
@@ -47,8 +49,10 @@ module.exports = function townshipToken (maindb, options) {
 
     options = options || {}
     options.expiresIn = options.expiresIn || '5h'
-    secret = options.secret || secret
-    return jwt.sign(payload, secret, options)
+    if (algorithm) options.algorithm = algorithm
+    var secretOrPrivateKey = options.secret || secret
+    if (keys.private) secretOrPrivateKey = keys.private
+    return jwt.sign(payload, secretOrPrivateKey, options)
   }
 
   /**
@@ -68,10 +72,12 @@ module.exports = function townshipToken (maindb, options) {
     }
 
     options = options || {}
-    secret = options.secret || secret
+    if (algorithm) options.algorithm = algorithm
+    var secretOrPublicKey = options.secret || secret
+    if (keys.public) secretOrPublicKey = keys.public
 
     try {
-      var data = jwt.verify(token, secret)
+      var data = jwt.verify(token, secretOrPublicKey, options)
       db.get(token, function (err) {
         if (!err) return callback(new Error('Token is invalid'))
         return callback(null, data)
@@ -107,12 +113,15 @@ module.exports = function townshipToken (maindb, options) {
     }
 
     options = options || {}
-    secret = options.secret || secret
+    if (algorithm) options.algorithm = algorithm
+    var secretOrPublicKey = options.secret || secret
+    if (keys.public) secretOrPublicKey = keys.public
+
     db.createReadStream().pipe(through.obj(each, end))
 
     function each (token, enc, next) {
       try {
-        jwt.verify(token.key, secret)
+        jwt.verify(token.key, secretOrPublicKey, options)
       } catch (jwterr) {
         return db.del(token.key, function (err) {
           if (err) return callback(err)
