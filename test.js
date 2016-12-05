@@ -184,3 +184,25 @@ test('clean up invalid tokens list with keys', function (t) {
     }, 1500)
   })
 })
+
+test('two tokens with same data made at different times are not the same', function (t) {
+  var db = memdb()
+  var tokens = townshipToken(db, { secret: 'not a secret' })
+
+  var token1 = tokens.sign({
+    auth: { basic: { key: 'example', email: 'email@example.com' } },
+    access: { scopes: ['site:read', 'site:edit'] },
+    data: { arbitrary: 'data' }
+  })
+
+  setTimeout(function () {
+    var token2 = tokens.sign({
+      auth: { basic: { key: 'example', email: 'email@example.com' } },
+      access: { scopes: ['site:read', 'site:edit'] },
+      data: { arbitrary: 'data' }
+    })
+
+    t.notEqual(token1, token2)
+    t.end()
+  }, 5000)
+})
