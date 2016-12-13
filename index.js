@@ -83,6 +83,7 @@ module.exports = function townshipToken (maindb, options) {
   * @param {function} callback
   **/
   tokens.verify = function verify (token, options, callback) {
+    assert.equal(typeof callback, 'function', 'township-token: callback function is required')
     if (!(typeof token === 'string')) return callback(new Error('township-token: token parameter must be a string'))
 
     if (typeof options === 'function') {
@@ -113,8 +114,8 @@ module.exports = function townshipToken (maindb, options) {
   * @param {function} callback
   **/
   tokens.invalidate = function invalidate (token, callback) {
-    if (!(typeof token === 'string')) return callback(new Error('township-token: token parameter must be a string'))
     assert.equal(typeof callback, 'function', 'township-token: callback function is required')
+    if (!(typeof token === 'string')) return callback(new Error('township-token: token parameter must be a string'))
     db.put(token, token, callback)
   }
 
