@@ -1,7 +1,7 @@
-var assert = require('assert')
-var jwt = require('jsonwebtoken')
-var sublevel = require('subleveldown')
-var through = require('through2')
+const assert = require('assert')
+const jwt = require('jsonwebtoken')
+const sublevel = require('subleveldown')
+const through = require('through2')
 
 /**
 * Initialize the `townshipToken` module. You can choose to specify either `secret` or `publicKey` and `privateKey` for signatures. To generate a keypair you can use [these commands](https://gist.github.com/maxogden/62b7119909a93204c747633308a4d769).
@@ -62,9 +62,9 @@ module.exports = function townshipToken (maindb, options) {
   * })
   **/
   tokens.sign = function sign (payload, options) {
-    assert.equal(typeof payload, 'object', 'township-token: payload object is required')
-    assert.equal(typeof payload.auth, 'object', 'township-token: payload.auth object is required')
-    assert.equal(typeof payload.access, 'object', 'township-token: payload.access object is required')
+    assert.strictEqual(typeof payload, 'object', 'township-token: payload object is required')
+    assert.strictEqual(typeof payload.auth, 'object', 'township-token: payload.auth object is required')
+    assert.strictEqual(typeof payload.access, 'object', 'township-token: payload.access object is required')
 
     options = options || {}
     options.expiresIn = options.expiresIn || '5h'
@@ -88,7 +88,7 @@ module.exports = function townshipToken (maindb, options) {
       options = {}
     }
 
-    assert.equal(typeof callback, 'function', 'township-token: callback function is required')
+    assert.strictEqual(typeof callback, 'function', 'township-token: callback function is required')
     if (!(typeof token === 'string')) return callback(new Error('township-token: token parameter must be a string'))
 
     options = options || {}
@@ -114,7 +114,7 @@ module.exports = function townshipToken (maindb, options) {
   * @param {function} callback
   **/
   tokens.invalidate = function invalidate (token, callback) {
-    assert.equal(typeof callback, 'function', 'township-token: callback function is required')
+    assert.strictEqual(typeof callback, 'function', 'township-token: callback function is required')
     if (!(typeof token === 'string')) return callback(new Error('township-token: token parameter must be a string'))
     db.put(token, token, callback)
   }

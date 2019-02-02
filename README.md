@@ -70,7 +70,7 @@ auth.create(creds, function (err, authData) {
 
 ## API
 
-Read the API docs for this module in [docs/API.md](docs/API.md)
+Read the API docs for this module in [docs/api.md](docs/api.md)
 
 ## See also
 
